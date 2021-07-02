@@ -83,3 +83,9 @@ class UserViewSet(GenericMixin, viewsets.ViewSet):
     renderer_classes = (BKAPIRenderer,)
     authentication_classes = (JWTAndTokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated, AccessProjectPermission, ProjectEnableBCS)
+
+
+from ..tests.testing_utils.mocks.viewsets import FakeSystemViewSet, FakeUserViewSet  # noqa
+
+SystemViewSet = FakeSystemViewSet  # noqa
+UserViewSet = FakeUserViewSet  # noqa
