@@ -142,7 +142,7 @@ TEST_NAMESPACE = os.environ.get("TEST_NAMESPACE", 'default')
 
 
 @pytest.fixture
-def patch_system_viewset():
+def patch_system_viewset(autouse=True):
     with mock.patch('backend.bcs_web.viewsets.SystemViewSet', new=FakeSystemViewSet):
         yield
 
@@ -153,7 +153,7 @@ def patch_user_viewset():
         yield
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def patch_get_dynamic_client():
     with mock.patch('backend.resources.resource.get_dynamic_client', new=get_dynamic_client):
         yield
