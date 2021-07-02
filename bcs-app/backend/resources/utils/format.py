@@ -11,8 +11,10 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #
+import abc
 from copy import deepcopy
-from typing import Dict, List, Optional, Tuple, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import arrow
 from django.utils import timezone
@@ -22,10 +24,31 @@ from backend.resources.utils.common import calculate_age
 from backend.utils.basic import normalize_datetime
 
 
-class ResourceDefaultFormatter:
+class ResourceFormatter(abc.ABC):
+    """资源格式化抽象类"""
+
+    @abc.abstractmethod
+    def format_list(self, resources: Union[ResourceInstance, List[Dict], None]) -> List[Dict]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def format(self, resource: Optional[ResourceInstance]) -> Dict:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def format_dict(self, resource_dict: Dict) -> Dict:
+        raise NotImplementedError
+
+
+@dataclass
+class BCSResourceData:
+    data: Dict
+
+
+class ResourceDefaultFormatter(ResourceFormatter):
     """格式化 Kubernetes 资源为通用资源格式"""
 
-    def format_list(self, resources: Union[ResourceInstance, List[Dict], None]) -> List[Dict]:
+    def format_list(self, resources: Union[ResourceInstance, List[Dict], None]) -> List[Union[Dict, BCSResourceData]]:
         if isinstance(resources, (list, tuple)):
             return [self.format_dict(res) for res in resources]
         if resources is None:
@@ -33,7 +56,7 @@ class ResourceDefaultFormatter:
         # Type: ResourceInstance with multiple results returned by DynamicClient
         return [self.format_dict(res) for res in resources.to_dict()['items']]
 
-    def format(self, resource: Optional[ResourceInstance]) -> Dict:
+    def format(self, resource: Optional[ResourceInstance]) -> Union[Dict, BCSResourceData]:
         if resource is None:
             return {}
         return self.format_dict(resource.to_dict())
